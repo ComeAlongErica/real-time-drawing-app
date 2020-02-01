@@ -1,13 +1,29 @@
 const io = require('socket.io')()
+const r = require('rethinkdb')
 
-io.on('connection', client => {
-  // on handles events
-  client.on('subscribeToTimer', interval => {
-    console.log('client is subscribing to timer w/ interval', interval)
-    setInterval(() => {
-      //  emit published events
-      client.emit('timer', new Date())
-    }, interval)
+// opens connection
+r.connect({
+  host: 'localhost',
+  port: 28015,
+  db: 'awesome_whiteboard'
+}).then(connection => {
+  // use returned promise from rethinkfb to handle socket to get time and values
+  io.on('connection', client => {
+    // on handles events
+    client.on('subscribeToTimer', interval => {
+      // open new query on rethinkDB w/ table method, interested in changes, run the query and pass connection, use promise to handle cursor and call each on the values
+      r
+        .table('timers')
+        .changes()
+        .run(connection)
+        .then(cursor => {
+          cursor.each((err, timerRow) => {
+            console.log(err)
+            //  emit published events with timestamp
+            client.emit('timer', timerRow.new_val.timestamp)
+          })
+        })
+    })
   })
 })
 
