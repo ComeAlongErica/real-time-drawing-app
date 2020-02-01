@@ -2,10 +2,14 @@
 import openSocket from 'socket.io-client'
 const socket = openSocket('http://localhost:8000')
 
-function subscribeToTimer (cb) {
-  socket.on('timer', timestamp => cb(timestamp))
+function subscribeToDrawings (cb) {
+  socket.on('drawing', cb)
   // the server expects to get an interval as a payload form this event
-  socket.emit('subscribeToTimer', 1000)
+  socket.emit('subscribeToDrawings', 1000)
 }
 
-export { subscribeToTimer }
+function createDrawing (name) {
+  socket.emit('createDrawing', { name })
+}
+
+export { subscribeToDrawings, createDrawing }

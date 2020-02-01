@@ -1,6 +1,24 @@
 const io = require('socket.io')()
 const r = require('rethinkdb')
 
+function createDrawing ({ connection, name }) {
+  r.table('drawings')
+    .insert({ name, timestamp: new Date() })
+    .run(connection)
+    .then(() => console.log('created a drawing with name: ', name))
+}
+
+function subscribeToDrawing ({ client, connection }) {
+  r.table('drawings')
+    .changes({ include_initial: true })
+    .run(connection)
+    .then(cursor => {
+      cursor.each((err, drawingRow) =>
+        client.emit('drawing', drawingRow.new_val)
+      )
+    })
+}
+
 // opens connection
 r.connect({
   host: 'localhost',
@@ -10,20 +28,13 @@ r.connect({
   // use returned promise from rethinkfb to handle socket to get time and values
   io.on('connection', client => {
     // on handles events
-    client.on('subscribeToTimer', interval => {
-      // open new query on rethinkDB w/ table method, interested in changes, run the query and pass connection, use promise to handle cursor and call each on the values
-      r
-        .table('timers')
-        .changes()
-        .run(connection)
-        .then(cursor => {
-          cursor.each((err, timerRow) => {
-            console.log(err)
-            //  emit published events with timestamp
-            client.emit('timer', timerRow.new_val.timestamp)
-          })
-        })
+    client.on('createDrawing', ({ name }) => {
+      createDrawing({ connection, name })
     })
+
+    client.on('subscribeToDrawings', () =>
+      subscribeToDrawing({ client, connection })
+    )
   })
 })
 
