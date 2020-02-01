@@ -3,7 +3,7 @@ import openSocket from 'socket.io-client'
 const socket = openSocket('http://localhost:8000')
 
 function subscribeToDrawings (cb) {
-  socket.on('drawing', cb)
+  socket.on('drawings', cb)
   // the server expects to get an interval as a payload form this event
   socket.emit('subscribeToDrawings', 1000)
 }

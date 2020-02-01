@@ -8,7 +8,7 @@ function createDrawing ({ connection, name }) {
     .then(() => console.log('created a drawing with name: ', name))
 }
 
-function subscribeToDrawing ({ client, connection }) {
+function subscribeToDrawings ({ client, connection }) {
   r.table('drawings')
     .changes({ include_initial: true })
     .run(connection)
@@ -33,7 +33,7 @@ r.connect({
     })
 
     client.on('subscribeToDrawings', () =>
-      subscribeToDrawing({ client, connection })
+      subscribeToDrawings({ client, connection })
     )
   })
 })
