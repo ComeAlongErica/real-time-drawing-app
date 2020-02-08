@@ -16,7 +16,6 @@ class Drawing extends Component {
       })
     })
   }
-
   handleDraw = line => {
     publishLine({
       drawingId: this.props.drawing.id,
@@ -27,8 +26,14 @@ class Drawing extends Component {
   render () {
     return this.props.drawing ? (
       <div className='Drawing'>
-        <div className='Drawing-title'>{this.props.drawing.name}</div>
-        <Canvas onDraw={this.handleDraw} drawingEnabled={true} lines={this.state.lines} />
+        <div className='Drawing-title'>
+          {this.props.drawing.name}({this.state.lines.length})
+        </div>
+        <Canvas
+          onDraw={this.handleDraw}
+          drawingEnabled={true}
+          lines={this.state.lines}
+        />
       </div>
     ) : null
   }
