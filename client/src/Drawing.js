@@ -1,8 +1,22 @@
 import React, { Component } from 'react'
 import Canvas from 'simple-react-canvas'
-import { publishLine } from './api'
+import { publishLine, subscribeToDrawingLines } from './api'
 
 class Drawing extends Component {
+  state = {
+    lines: []
+  }
+
+  componentDidMount () {
+    subscribeToDrawingLines(this.props.drawing.id, line => {
+      this.setState(prevState => {
+        return {
+          lines: [...prevState.lines, line]
+        }
+      })
+    })
+  }
+
   handleDraw = line => {
     publishLine({
       drawingId: this.props.drawing.id,
@@ -14,7 +28,7 @@ class Drawing extends Component {
     return this.props.drawing ? (
       <div className='Drawing'>
         <div className='Drawing-title'>{this.props.drawing.name}</div>
-        <Canvas onDraw={this.handleDraw} drawingEnabled={true} />
+        <Canvas onDraw={this.handleDraw} drawingEnabled={true} lines={this.state.lines} />
       </div>
     ) : null
   }

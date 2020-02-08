@@ -26,13 +26,26 @@ function handleLinePublish ({ connection, line }) {
     .run(connection)
 }
 
+function subscribeToDrawingLines ({ client, connection, drawingId }) {
+  return r
+    .table('lines')
+    .filter(r.row('drawingId').eq(drawingId)) // filter only lines we want to display
+    .changes({ include_initial: true, include_types: true })
+    .run(connection)
+    .then(cursor => {
+      cursor.each((err, lineRow) =>
+        client.emit(`drawingLine:${drawingId}`, lineRow.new_val)
+      )
+    })
+}
+
 // opens connection
 r.connect({
   host: 'localhost',
   port: 28015,
   db: 'awesome_whiteboard'
 }).then(connection => {
-  // use returned promise from rethinkfb to handle socket to get time and values
+  // use returned promise from rethinkfb to handle sockets to get time and values
   io.on('connection', client => {
     // on handles events
     client.on('createDrawing', ({ name }) => {
@@ -49,6 +62,14 @@ r.connect({
         connection
       })
     )
+
+    client.on('subscribeToDrawingLines', drawingId => {
+      subscribeToDrawingLines({
+        client,
+        connection,
+        drawingId
+      })
+    })
   })
 })
 
