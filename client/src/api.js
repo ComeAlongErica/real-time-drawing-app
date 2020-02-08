@@ -12,4 +12,8 @@ function createDrawing (name) {
   socket.emit('createDrawing', { name })
 }
 
-export { subscribeToDrawings, createDrawing }
+function publishLine ({ drawingId, line }) {
+  socket.emit('publishLine', { drawingId, ...line })
+}
+
+export { subscribeToDrawings, createDrawing, publishLine }
