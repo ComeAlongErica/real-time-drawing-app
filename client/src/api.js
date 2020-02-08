@@ -1,5 +1,6 @@
 // this file will communicate witht the socket
 import openSocket from 'socket.io-client'
+import Rx from 'rxjs/Rx'
 const socket = openSocket('http://localhost:8000')
 
 function subscribeToDrawings (cb) {
@@ -17,8 +18,20 @@ function publishLine ({ drawingId, line }) {
 }
 
 function subscribeToDrawingLines (drawingId, cb) {
-  // use id to avoid crossing events
-  socket.on(`drawingLine:${drawingId}`, line => cb(line))
+  // returns an item from observable every time event fires
+  const lineStream = Rx.Observable.fromEventPattern(
+    // subscribes
+    handler => socket.on(`drawingLine:${drawingId}`, handler),
+    // unsubscribes
+    handler => socket.off(`drawingLine:${drawingId}`, handler)
+  )
+
+  // groups up in time segments with operator
+  const bufferedTimeStream = lineStream
+    .bufferTime(100)
+    .map(lines => ({ lines }))
+
+  bufferedTimeStream.subscribe(linesEvent => cb(linesEvent))
   socket.emit('subscribeToDrawingLines', drawingId)
 }
 
