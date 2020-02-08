@@ -19,17 +19,20 @@ function subscribeToDrawings ({ client, connection }) {
     })
 }
 
-function handleLinePublish ({ connection, line }) {
+function handleLinePublish ({ connection, line, callback }) {
   console.log('saving line to the db')
   r.table('lines')
     .insert(Object.assign(line, { timestamp: new Date() }))
     .run(connection)
+    .then(callback)
 }
 
-function subscribeToDrawingLines ({ client, connection, drawingId }) {
+function subscribeToDrawingLines ({ client, connection, drawingId, from }) {
+  let query = r.row('drawingId').eq(drawingId)
+  if (from) query = query.and(r.row('timestamp').ge(new Date(from)))
   return r
     .table('lines')
-    .filter(r.row('drawingId').eq(drawingId)) // filter only lines we want to display
+    .filter(query) // filter only lines we want to display
     .changes({ include_initial: true, include_types: true })
     .run(connection)
     .then(cursor => {
@@ -56,23 +59,25 @@ r.connect({
       subscribeToDrawings({ client, connection })
     )
 
-    client.on('publishLine', line =>
+    client.on('publishLine', (line, callback) =>
       handleLinePublish({
         line,
-        connection
+        connection,
+        callback
       })
     )
 
-    client.on('subscribeToDrawingLines', drawingId => {
+    client.on('subscribeToDrawingLines', ({ drawingId, from }) => {
       subscribeToDrawingLines({
         client,
         connection,
-        drawingId
+        drawingId,
+        from
       })
     })
   })
 })
-
-const port = 8000
-io.listen(8000)
+console.log(parseInt(process.argv[2], 10))
+const port = parseInt(process.argv[2], 10) || 8000
+io.listen(port)
 console.log('listening on port ', port)

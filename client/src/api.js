@@ -1,6 +1,7 @@
 // this file will communicate witht the socket
 import openSocket from 'socket.io-client'
 import Rx from 'rxjs/Rx'
+import createSync from 'rxsync'
 
 // hacky, only doing this for working locally
 console.log(parseInt(window.location.search.replace('?', ''), 10))
@@ -16,8 +17,31 @@ function createDrawing (name) {
   socket.emit('createDrawing', { name })
 }
 
+const sync = createSync({
+  maxRetries: 10,
+  delayBetweenRetries: 1000,
+  syncAction: line =>
+    new Promise((resolve, reject) => {
+      let sent = false
+
+      socket.emit('publishLine', line, () => {
+        sent = true
+        resolve()
+      })
+
+      setTimeout(() => {
+        if (!sent) {
+          reject()
+        }
+      }, 2000)
+    })
+})
+
+sync.failedItems.subscribe(x => console.error('failed line sync', x))
+sync.syncedItems.subscribe(x => console.log('line synced', x))
+
 function publishLine ({ drawingId, line }) {
-  socket.emit('publishLine', { drawingId, ...line })
+  sync.queue({ drawingId, ...line })
 }
 
 function subscribeToDrawingLines (drawingId, cb) {
@@ -43,7 +67,7 @@ function subscribeToDrawingLines (drawingId, cb) {
   // gives us the latest timestamp coming through
   const maxSteam = lineStream
     .map(line => new Date(line.timestamp).getTime())
-    .scan((a, b) => ((a > b) ? a : b), 0)
+    .scan((a, b) => (a > b ? a : b), 0)
 
   reconnectStream
     .scan(maxSteam)
