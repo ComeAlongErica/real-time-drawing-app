@@ -1,5 +1,5 @@
 # real-time-drawing-app
-I followed this project on PluralSight. After migrating for work to Github, I noticed the real time updates with out having the refresh the page. I thought it was cool and wanted to learn how it worked! This covers the publish/subscribe design pattern and handles disconnections.
+I followed this project on PluralSight. After migrating for work to Github, I noticed the real time updates with out having to refresh the page. I thought it was cool and wanted to learn how it worked! This covers the publish/subscribe design pattern and handles disconnections.
 
 This app uses React, Socket.io, RxJS, and RethinkBD
 
