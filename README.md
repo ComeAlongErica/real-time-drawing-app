@@ -1,10 +1,21 @@
 # real-time-drawing-app
+I followed this project on PluralSight. After migrating for work to Github, I noticed the real time updates with out having the refresh the page. I thought it was cool and wanted to learn how it worked! This covers the publish/subscribe design pattern and handles disconnections.
 
-### quick notes
-nvm use 6.11.1
+This app uses React, Socket.io, RxJS, and RethinkBD
 
-npm start in client folder
+### To get started
 
-npm startin server folder
-
-rethinkdb to run db and manage on http://localhost:8080/
+cd into client folder and run <code>npm start</code>
+```
+cd ./client
+npm start
+```
+cd into server folder and run <code>npm start</code>
+```
+cd ./client
+npm start
+```
+In root director run command <code>rethinkdb</code>. If database is not configured, go to http://localhost:8080/ and add a database 'awesome_whiteboard' and add two tables 'drawings' and 'lines'.
+```
+rethinkdb
+```
