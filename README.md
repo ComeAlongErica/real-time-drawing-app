@@ -15,7 +15,7 @@ cd into server folder and run <code>npm start</code>
 cd ./server
 npm start
 ```
-In root director run command <code>rethinkdb</code>. If database is not configured, go to http://localhost:8080/ and add a database 'awesome_whiteboard' and add two tables 'drawings' and 'lines'.
+In root directory run command <code>rethinkdb</code>. If database is not configured, go to http://localhost:8080/ and add a database 'awesome_whiteboard' and add two tables 'drawings' and 'lines'.
 ```
 rethinkdb
 ```
